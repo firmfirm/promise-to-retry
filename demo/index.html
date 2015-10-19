@@ -1,0 +1,65 @@
+<!doctype html>
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+    <title>promise-to-retry Demo</title>
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <link rel="import" href="../promise-to-retry.html">
+  </head>
+  <body unresolved>
+
+    <p>An example of <code>&lt;promise-to-retry&gt;</code>:</p>
+
+    <button id="successful">Successful promise</button>
+    <button id="failing">2 times failing promise with delay</button>
+    <promise-to-retry>
+      <h2>Some content asking to retry</h2>
+    </promise-to-retry>
+
+    <script>
+      var el = document.querySelector('promise-to-retry');
+
+      document.querySelector('#successful').addEventListener('click', function() {
+        el.ensureSuccess(function() {
+          return new Promise(function(resolve) {
+            resolve('Resolve from #successful!');
+          });
+        }).then(appendP);
+      });
+
+      document.querySelector('#failing').addEventListener('click', function() {
+        var numTries = 0;
+        el.ensureSuccess(function() {
+          return new Promise(function(resolve, reject) {
+            setTimeout(function() {
+              if (++numTries > 2) resolve('Resolve from #failing!');
+              else reject();
+            }, 1000);
+          });
+        }).then(appendP);
+      });
+
+      el.addEventListener("num-tries-changed", function(e) {
+        appendP('num-tries-changed: ' + e.detail.value);
+      });
+
+      var appendP = function(text) {
+        var newNode = document.createElement('p');
+        newNode.innerHTML = text;
+        document.querySelector('body').appendChild(newNode);
+      };
+
+    </script>
+
+  </body>
+</html>

@@ -1,0 +1,29 @@
+{
+  "name": "promise-to-retry",
+  "version": "0.1.0",
+  "authors": [
+    "Martynas <martynas@firmfirm.co>"
+  ],
+  "description": "An element to make sure that some action returning `Future` succeeds before user can continue using your app",
+  "keywords": [
+    "web-component",
+    "polymer",
+    "retry",
+    "promise"
+  ],
+  "main": "promise-to-retry.html",
+  "homepage": "https://github.com/firmfirm/promise-to-retry/",
+  "ignore": [
+    "/.*",
+    "/test/"
+  ],
+  "dependencies": {
+    "polymer": "Polymer/polymer#^1.1.0",
+    "paper-button": "PolymerElements/paper-button#~1.0.8",
+    "paper-spinner": "PolymerElements/paper-spinner#~1.0.2",
+    "iron-icons": "PolymerElements/iron-icons#~1.0.4"
+  },
+  "devDependencies": {
+    "iron-component-page": "PolymerElements/iron-component-page#^1.0.0"
+  }
+}
