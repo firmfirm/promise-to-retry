@@ -6,7 +6,7 @@
   ],
   "description": "An element to make sure that some action returning `Future` succeeds before user can continue using your app",
   "keywords": [
-    "web-component",
+    "web-components",
     "polymer",
     "retry",
     "promise"
