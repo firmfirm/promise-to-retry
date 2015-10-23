@@ -89,11 +89,6 @@ Example:
 
     },
 
-    // Element Lifecycle
-
-    ready: function() {
-    },
-
     // Element Behavior
 
     /**
@@ -138,6 +133,7 @@ Example:
     },
 
     _onRetryClick: function() {
+      this._setMinContainerHeight();
       this._resolving(true);
       this._retry();
     },
@@ -155,6 +151,16 @@ Example:
       this._setVisibility(this.querySelector('paper-spinner'), false);
       this._setVisibility(this.querySelector('paper-button'), false);
       this._setVisibility(this, false);
+    },
+
+    _setMinContainerHeight: function() {
+      var container = this.querySelector('.container');
+      if (!container.style.minHeight) {
+        var getPadding = function(direction) { return parseFloat(window.getComputedStyle(container, null).getPropertyValue('padding-'+direction)) };
+        var padding = getPadding('top') + getPadding('bottom');
+        console.log(padding);
+        container.style.minHeight = (container.clientHeight - padding) + 'px';
+      }
     }
 
   });
