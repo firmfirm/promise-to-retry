@@ -156,9 +156,8 @@ Example:
     _setMinContainerHeight: function() {
       var container = this.querySelector('.container');
       if (!container.style.minHeight) {
-        var getPadding = function(direction) { return parseFloat(window.getComputedStyle(container, null).getPropertyValue('padding-'+direction)) };
+        var getPadding = function(direction) { return parseFloat(window.getComputedStyle(container, null).getPropertyValue('padding-'+direction)); };
         var padding = getPadding('top') + getPadding('bottom');
-        console.log(padding);
         container.style.minHeight = (container.clientHeight - padding) + 'px';
       }
     }
