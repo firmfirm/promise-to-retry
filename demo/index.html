@@ -22,6 +22,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     <button id="successful">Successful promise</button>
     <button id="failing">2 times failing promise with delay</button>
+    <button id="successfulAuto">Successful promise with ensureSuccessAuto method</button>
+    <button id="failingAuto">4 times failing promise with delay and ensureSuccessAuto method</button>
     <promise-to-retry>
       <h2>Some content asking to retry</h2>
     </promise-to-retry>
@@ -34,7 +36,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           return new Promise(function(resolve) {
             resolve('Resolve from #successful!');
           });
-        }).then(appendP);
+        }, 'sucessful').then(appendP);
       });
 
       document.querySelector('#failing').addEventListener('click', function() {
@@ -46,11 +48,31 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               else reject();
             }, 1000);
           });
-        }).then(appendP);
+        }, 'failing').then(appendP);
       });
 
-      el.addEventListener("num-tries-changed", function(e) {
-        appendP('num-tries-changed: ' + e.detail.value);
+      document.querySelector('#successfulAuto').addEventListener('click', function() {
+        el.ensureSuccessAuto(function() {
+          return new Promise(function(resolve) {
+            resolve('Resolve from #successfulAuto!');
+          });
+        }, 'sucessfulAuto').then(appendP);
+      });
+
+      document.querySelector('#failingAuto').addEventListener('click', function() {
+        var numTries = 0;
+        el.ensureSuccessAuto(function() {
+          return new Promise(function(resolve, reject) {
+            setTimeout(function() {
+              if (++numTries > 4) resolve('Resolve from #failingAuto!');
+              else reject();
+            }, 1000);
+          });
+        }, 'failingAuto').then(appendP);
+      });
+
+      el.addEventListener("fail", function(e) {
+        appendP('fail: ' + JSON.stringify(e.detail));
       });
 
       var appendP = function(text) {

@@ -76,27 +76,19 @@ Example:
     is: 'promise-to-retry',
 
     properties: {
-
-      /**
-       * `numTries` indicates the number of unsuccessful tries made
-       */
-      numTries: {
-        type: Number,
-        notify: true,
-        value: 0
+      _tasks: {
+        type: Object,
+        value: function() { return {} }
       }
-
     },
 
     // Element Behavior
 
     /**
-     * The `num-tries-changed` event is fired after every
-     * unsuccessful try to resolve the promise.
-     * Also called when resetting numTries back to 0 on subsequent
-     * `ensureSuccess` calls.
+     * The `fail` event is fired after every failed try.
+     * @detail {{name:String, try:Number, wait:Number}}
      *
-     * @event num-tries-changed
+     * @event fail
      */
 
     /**
@@ -104,37 +96,86 @@ Example:
      * If it fails, shows a dialog popup that
      * prompts user to retry until it succeeds
      *
-     * @param {Function} function that must return a promise
+     * @param {Function} func function that must return a promise
+     * @param {String} name task name, which is used to identify task on `fail` event.
      * @return {Promise} that it guaranteed not to fail and returns
      * result of provided function
      */
-    ensureSuccess: function(func) {
-      var self = this;
-      var result = new Promise(function(resolve) {
-        self._resolve = resolve;
-      });
-      this.numTries = 0;
-      this._func = func;
-      this._retry();
-      return result;
+    ensureSuccess: function(func, name) {
+      if (!func || !name) throw "Missing func or name in ensureSuccess"
+      return new Promise(function(resolve) {
+        this._tasks[name] = {
+          resolve: resolve,
+          func: func,
+          tries: 0
+        };
+        this._retry(name);
+      }.bind(this));
     },
 
-    _retry: function() {
-      var self = this;
-      this._func().then(function(result) {
-        self._resolve(result);
-        self._close();
-      }).catch(function() {
-        self._setVisibility(self, true);
-        self._resolving(false);
-        self.numTries = self.numTries+1;
+    /**
+     * Invoke provided function. Similar to ensureSuccess, except that it doesnt
+     * ask anything from user and does retries automatically, which each retry having
+     * a bigger delay.
+     *
+     * @param {Function} func function that must return a promise
+     * @param {String} name task name, which is used to identify task on `fail` event.
+     * @return {Promise} that it guaranteed not to fail and returns
+     * result of provided function
+     */
+    ensureSuccessAuto: function(func, name) {
+      if (!func || !name) throw "Missing func or name in ensureSuccess"
+      var numTries = 0;
+      var fn = function() {
+        return func().catch(function() {
+          var wait = 100 * Math.pow(2, ++numTries);
+          this.fire('fail', {
+            tries: numTries,
+            name: name,
+            wait: wait
+          });
+          return this.asyncPromise(fn, wait).catch(fn);
+        }.bind(this));
+      }.bind(this)
+      return fn();
+    },
+
+    /**
+     * Similar to Polymer's `async`, except that it returns result of function.
+     * @param {Function} func function that must return a promise
+     * @param {Number} wait wait time in ms before executing function
+     */
+    asyncPromise: function(func, wait) {
+      var resolve, reject;
+      var promise = new Promise(function(_resolve, _reject) {
+        resolve = _resolve;
+        reject = _reject;
       });
+      this.async(function() { func().then(resolve, reject); }, wait);
+      return promise;
+    },
+
+    _retry: function(name) {
+      this._tasks[name].func().then(function(result) {
+        this._tasks[name].resolve(result);
+        this._close();
+      }.bind(this)).catch(function() {
+        this._setVisibility(this, true);
+        this._resolving(false);
+        this._taskName = name;
+        var task = this._tasks[name];
+        task.tries = task.tries+1;
+        this.fire('fail', {
+          try: task.tries,
+          name: name
+        })
+      }.bind(this));
     },
 
     _onRetryClick: function() {
       this._setMinContainerHeight();
       this._resolving(true);
-      this._retry();
+      this._retry(this._taskName);
     },
 
     _resolving: function(resolving) {
