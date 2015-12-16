@@ -71,6 +71,54 @@ Example:
 
 <script>
 
+(function() {
+
+  if (!window.Zamok) window.Zamok = {};
+  if (!window.Zamok.retry) window.Zamok.retry = {};
+
+  /**
+   * Similar to setTimeout, except that it returns result of function.
+   * @param {Function} func function that must return a promise
+   * @param {Number} wait wait time in ms before executing function
+   */
+  Zamok.retry.setTimeoutToPromise = function(func, wait) {
+    var resolve, reject;
+    var promise = new Promise(function(_resolve, _reject) {
+      resolve = _resolve;
+      reject = _reject;
+    });
+    setTimeout(function() { func().then(resolve, reject); }, wait);
+    return promise;
+  };
+
+  /**
+   * Invoke provided function. Similar to ensureSuccess, except that it doesnt
+   * ask anything from user and does retries automatically, which each retry having
+   * a bigger delay.
+   *
+   * @param {Function} func function that must return a promise
+   * @param {String} name task name, which is used to identify task on `fail` event.
+   * @return {Promise} that it guaranteed not to fail and returns
+   * result of provided function
+   */
+  Zamok.retry.auto = function(func, cb) {
+    if (!func) throw "Missing func or name in ensureSuccess"
+    var numTries = 0;
+    var fn = function() {
+      return func().catch(function(e) {
+        var wait = 100 * Math.pow(2, ++numTries);
+        if (cb) cb({
+          tries: numTries,
+          name: name,
+          wait: wait,
+          error: e
+        });
+        return Zamok.retry.setTimeoutToPromise(fn, wait).catch(fn);
+      });
+    };
+    return fn();
+  };
+
   Polymer({
 
     is: 'promise-to-retry',
@@ -85,10 +133,10 @@ Example:
     // Element Behavior
 
     /**
-     * The `fail` event is fired after every failed try.
+     * The `promise-to-retry-fail` event is fired after every failed try.
      * @detail {{name:String, try:Number, wait:Number}}
      *
-     * @event fail
+     * @event promise-to-retry-fail
      */
 
     /**
@@ -97,7 +145,7 @@ Example:
      * prompts user to retry until it succeeds
      *
      * @param {Function} func function that must return a promise
-     * @param {String} name task name, which is used to identify task on `fail` event.
+     * @param {String} name task name, which is used to identify task on `promise-to-retry-fail` event.
      * @return {Promise} that it guaranteed not to fail and returns
      * result of provided function
      */
@@ -113,61 +161,20 @@ Example:
       }.bind(this));
     },
 
-    /**
-     * Invoke provided function. Similar to ensureSuccess, except that it doesnt
-     * ask anything from user and does retries automatically, which each retry having
-     * a bigger delay.
-     *
-     * @param {Function} func function that must return a promise
-     * @param {String} name task name, which is used to identify task on `fail` event.
-     * @return {Promise} that it guaranteed not to fail and returns
-     * result of provided function
-     */
-    ensureSuccessAuto: function(func, name) {
-      if (!func || !name) throw "Missing func or name in ensureSuccess"
-      var numTries = 0;
-      var fn = function() {
-        return func().catch(function() {
-          var wait = 100 * Math.pow(2, ++numTries);
-          this.fire('fail', {
-            tries: numTries,
-            name: name,
-            wait: wait
-          });
-          return this.asyncPromise(fn, wait).catch(fn);
-        }.bind(this));
-      }.bind(this)
-      return fn();
-    },
-
-    /**
-     * Similar to Polymer's `async`, except that it returns result of function.
-     * @param {Function} func function that must return a promise
-     * @param {Number} wait wait time in ms before executing function
-     */
-    asyncPromise: function(func, wait) {
-      var resolve, reject;
-      var promise = new Promise(function(_resolve, _reject) {
-        resolve = _resolve;
-        reject = _reject;
-      });
-      this.async(function() { func().then(resolve, reject); }, wait);
-      return promise;
-    },
-
     _retry: function(name) {
       this._tasks[name].func().then(function(result) {
         this._tasks[name].resolve(result);
         this._close();
-      }.bind(this)).catch(function() {
+      }.bind(this)).catch(function(e) {
         this._setVisibility(this, true);
         this._resolving(false);
         this._taskName = name;
         var task = this._tasks[name];
         task.tries = task.tries+1;
-        this.fire('fail', {
+        this.fire('promise-to-retry-fail', {
           try: task.tries,
-          name: name
+          name: name,
+          error: e
         })
       }.bind(this));
     },
@@ -203,5 +210,6 @@ Example:
     }
 
   });
+})();
 
 </script>
