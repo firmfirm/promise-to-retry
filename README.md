@@ -1,4 +1,4 @@
-# PromiseToRetry
+# PromiseToRetry [ ![Codeship Status for firmfirm/promise-to-retry](https://codeship.com/projects/c3d88730-bd0d-0133-cfbe-129a4e5cf2b4/status?branch=master)](https://codeship.com/projects/136432)
 
 Helper function to easily retry some action returning Promise until it succeeds.
 
