@@ -12,8 +12,7 @@
         resolve = _resolve;
         reject = _reject;
       });
-      console.log('setTimeout');
-      setTimeout(function() { console.log('setTimeout invoke'); func().then(resolve, reject); }, wait);
+      setTimeout(function() { func().then(resolve, reject); }, wait);
       return promise;
     },
 
