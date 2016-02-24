@@ -1,0 +1,68 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+    <script src="../bower_components/web-component-tester/browser.js"></script>
+
+    <link rel="import" href="../promise-to-retry.html">
+  </head>
+  <body>
+
+  <script>
+    describe('PromiseToRetry', function() {
+
+      describe('.ensure', function() {
+
+        it('succeeds', function() {
+          var cb = sinon.spy();
+          return PromiseToRetry.ensure(function() {
+            return new Promise(function(resolve) {
+              resolve('success');
+            })
+          }, cb).then(function(result) {
+            expect(cb).to.not.be.called;
+            expect(result).to.equal('success');
+          });
+        });
+
+        it('fails', function() {
+          var numTries = 0;
+          var cb = sinon.spy();
+          return PromiseToRetry.ensure(function() {
+            return new Promise(function(resolve, reject) {
+              if (++numTries > 1) resolve('success');
+              else reject('some error');
+            });
+          }, cb).then(function(result) {
+            expect(cb).to.be.calledOnce;
+            expect(cb.args[0][0].error).to.equal('some error');
+            expect(cb.args[0][0].tries).to.equal(1);
+            expect(cb.args[0][0].wait).to.be.above(0);
+            expect(result).to.equal('success');
+          });
+        });
+      });
+
+      /*
+       * Not testing setTimeout part
+       */
+      describe('setTimeoutToPromise', function() {
+
+        it('should return promise result', function() {
+          return PromiseToRetry.setTimeoutToPromise(function() {
+            return new Promise(function(resolve) {
+              resolve('result');
+            });
+          }, 1).then(function(returned) {
+            expect(returned).to.equal('result');
+          });
+        });
+
+      });
+
+    });
+  </script>
+
+  </body>
+</html>

@@ -1,5 +1,31 @@
-# promise-to-retry
+# PromiseToRetry
 
-An element to make sure that some action returning `Future` succeeds before user can continue using your app.
+Helper function to easily retry some action returning Promise until it succeeds.
 
-For more info see [component page](https://firmfirm.github.io/promise-to-retry/).
+Usage:
+
+`bower install --save promise-to-retry`
+
+```html
+<link rel="import" href="bower_components/promise-to-retry/promise-to-retry.html">
+```
+
+```javascript
+PromiseToRetry.ensure(function() {
+  // return your promise that might fail
+  return new Promise(function(resolve, reject) {
+    ...
+  });
+}).catch(function(error) {
+  // this can never happen
+});
+
+PromiseToRetry.setTimeoutToPromise(function() {
+  // this is delayed by 1000ms
+  return new Promise(function(resolve, reject) {
+    ...
+  });
+}, 1000).catch(function(error) {
+  // this can still happen
+});
+```

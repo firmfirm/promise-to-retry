@@ -1,78 +1,36 @@
 <!doctype html>
-<!--
-@license
-Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
-This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
-The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
-The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
-Code distributed by Google as part of the polymer project is also
-subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
--->
 <html>
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
     <title>promise-to-retry Demo</title>
-    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
     <link rel="import" href="../promise-to-retry.html">
   </head>
-  <body unresolved>
+  <body>
 
     <p>An example of <code>&lt;promise-to-retry&gt;</code>:</p>
 
-    <button id="successful">Successful promise</button>
-    <button id="failing">2 times failing promise with delay</button>
-    <button id="successfulAuto">Successful promise with auto method</button>
-    <button id="failingAuto">4 times failing promise with delay and auto method</button>
-    <promise-to-retry>
-      <h2>Some content asking to retry</h2>
-    </promise-to-retry>
+    <button id="successful">Successful promise with .ensure method</button>
+    <button id="failing">5 times failing promise with .ensure method</button>
 
     <script>
-      var el = document.querySelector('promise-to-retry');
 
       document.querySelector('#successful').addEventListener('click', function() {
-        el.ensureSuccess(function() {
+        PromiseToRetry.ensure(function() {
           return new Promise(function(resolve) {
             resolve('Resolve from #successful!');
-          });
-        }, 'sucessful').then(appendP);
-      });
-
-      document.querySelector('#failing').addEventListener('click', function() {
-        var numTries = 0;
-        el.ensureSuccess(function() {
-          return new Promise(function(resolve, reject) {
-            setTimeout(function() {
-              if (++numTries > 2) resolve('Resolve from #failing!');
-              else reject('some error');
-            }, 1000);
-          });
-        }, 'failing').then(appendP);
-      });
-
-      document.querySelector('#successfulAuto').addEventListener('click', function() {
-        Zamok.retry.auto(function() {
-          return new Promise(function(resolve) {
-            resolve('Resolve from #successfulAuto!');
           });
         }).then(appendP);
       });
 
-      document.querySelector('#failingAuto').addEventListener('click', function() {
+      document.querySelector('#failing').addEventListener('click', function() {
         var numTries = 0;
-        Zamok.retry.auto(function() {
+        PromiseToRetry.ensure(function() {
           return new Promise(function(resolve, reject) {
-            setTimeout(function() {
-              if (++numTries > 4) resolve('Resolve from #failingAuto!');
-              else reject('some error ' + numTries);
-            }, 1000);
+            if (++numTries > 5) resolve('Resolve from #failing!');
+            else reject('some error ' + numTries);
           });
         }, appendP).then(appendP);
-      });
-
-      el.addEventListener("promise-to-retry-fail", function(e) {
-        appendP('fail: ' + e.detail);
       });
 
       var appendP = function(text) {
