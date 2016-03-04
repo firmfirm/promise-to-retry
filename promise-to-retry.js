@@ -36,7 +36,23 @@
         });
       };
       return fn();
-    }
+    },
+
+    Queue: function() {}
   };
+
+  PromiseToRetry.Queue.prototype.queue = function(fn) {
+    var self = this;
+    var resolve = function() {
+      return self._resolving = fn().then(function(result) {
+        self._resolving = false;
+        return result;
+      });
+    };
+    if (this._resolving) {
+      return this._resolving.then(resolve);
+    }
+    return resolve();
+  }
 
 })(window);

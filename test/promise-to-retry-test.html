@@ -61,6 +61,62 @@
 
       });
 
+      describe('Queue', function() {
+        var sut;
+
+        beforeEach(function() {
+          sut = new PromiseToRetry.Queue();
+        });
+
+        describe('queue()', function() {
+          it('one call returns result of provided function', function() {
+            return sut.queue(()=>Promise.resolve('cool')).then(function(result) {
+              expect(result).to.equal('cool');
+            });
+          });
+          it('multiple calls invokes functions one by one', function() {
+            var taskNo = 1;
+            var createTask = function() {
+              var resolveFn;
+              var result = new Promise(function(resolve) {
+                resolveFn = resolve;
+              });
+              var fn = sinon.spy(()=>result);
+              return {
+                fn: fn,
+                result: sut.queue(fn, taskNo++),
+                resolve: resolveFn
+              }
+            };
+            var first = createTask();
+            var second = createTask();
+            expect(first.fn).to.be.calledOnce;
+            expect(second.fn).to.not.be.called;
+            first.resolve('first!');
+            return first.result.then(function(result) {
+              var third = createTask();
+              expect(third.fn).to.not.be.called;
+              expect(result).to.be.equal('first!');
+              expect(second.fn).to.be.calledOnce;
+              expect(third.fn).to.not.be.called;
+
+              second.resolve('second!');
+              return second.result.then(function(result) {
+                expect(result).to.be.equal('second!');
+                expect(third.fn).to.be.calledOnce;
+                third.resolve('third!');
+                // After all resolved, should continue working
+                return third.result.then(function(result) {
+                  expect(result).to.be.equal('third!');
+                  expect(first.fn).calledBefore(second.fn);
+                  expect(second.fn).calledBefore(third.fn);
+                });
+              });
+            });
+          });
+        });
+      });
+
     });
   </script>
 
