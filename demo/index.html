@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
     <title>promise-to-retry Demo</title>
-    <link rel="import" href="../promise-to-retry.html">
+    <script type="module" src="../promise-to-retry.js"></script>
   </head>
   <body>
 
@@ -13,33 +13,33 @@
     <button id="successful">Successful promise with .ensure method</button>
     <button id="failing">5 times failing promise with .ensure method</button>
 
-    <script>
+    <script type="module">
+import '../promise-to-retry.js';
 
-      document.querySelector('#successful').addEventListener('click', function() {
-        PromiseToRetry.ensure(function() {
-          return new Promise(function(resolve) {
-            resolve('Resolve from #successful!');
-          });
-        }).then(appendP);
-      });
+document.querySelector('#successful').addEventListener('click', function() {
+  PromiseToRetry.ensure(function() {
+    return new Promise(function(resolve) {
+      resolve('Resolve from #successful!');
+    });
+  }).then(appendP);
+});
 
-      document.querySelector('#failing').addEventListener('click', function() {
-        var numTries = 0;
-        PromiseToRetry.ensure(function() {
-          return new Promise(function(resolve, reject) {
-            if (++numTries > 5) resolve('Resolve from #failing!');
-            else reject('some error ' + numTries);
-          });
-        }, appendP).then(appendP);
-      });
+document.querySelector('#failing').addEventListener('click', function() {
+  var numTries = 0;
+  PromiseToRetry.ensure(function() {
+    return new Promise(function(resolve, reject) {
+      if (++numTries > 5) resolve('Resolve from #failing!');
+      else reject('some error ' + numTries);
+    });
+  }, appendP).then(appendP);
+});
 
-      var appendP = function(text) {
-        var newNode = document.createElement('p');
-        newNode.innerHTML = JSON.stringify(text);
-        document.querySelector('body').appendChild(newNode);
-      };
-
-    </script>
+var appendP = function(text) {
+  var newNode = document.createElement('p');
+  newNode.innerHTML = JSON.stringify(text);
+  document.querySelector('body').appendChild(newNode);
+};
+</script>
 
   </body>
 </html>

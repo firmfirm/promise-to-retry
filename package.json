@@ -1,0 +1,21 @@
+{
+  "name": "promise-to-retry",
+  "version": "2.5.0",
+  "description": "Helper function to easily retry some action returning Promise until it succeeds",
+  "scripts": {
+      "test": "polymer test --npm",
+      "start": "polymer serve --npm"
+  },
+  "keywords": [
+    "retry",
+    "promise"
+  ],
+  "homepage": "https://github.com/firmfirm/promise-to-retry/",
+  "license": "BSD-3-Clause",
+  "main": "promise-to-retry.js",
+  "author": "Martynas <martynas@firmfirm.co>",
+  "dependencies": {},
+  "devDependencies": {
+    "wct-browser-legacy": "^1.0.1"
+  }
+}
