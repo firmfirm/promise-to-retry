@@ -1,10 +1,10 @@
 {
   "name": "promise-to-retry",
-  "version": "2.5.0",
+  "version": "2.5.1",
   "description": "Helper function to easily retry some action returning Promise until it succeeds",
   "scripts": {
-      "test": "polymer test --npm",
-      "start": "polymer serve --npm"
+    "test": "polymer test --npm",
+    "start": "polymer serve --npm"
   },
   "keywords": [
     "retry",
